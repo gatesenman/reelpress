@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>映流 · 短视频生成与发布</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='6' fill='%23c2412d'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-size='36' fill='%23f6efe2' font-family='serif'%3E映%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <span class="seal" aria-hidden="true">映</span>
+        <div>
+          <h1>映流</h1>
+          <p>从一句主题，到可以发出去的短视频</p>
+        </div>
+      </div>
+      <div class="top-meta">
+        <span id="health-pill" class="pill">正在检查环境</span>
+        <span id="version-pill" class="pill quiet"></span>
+      </div>
+    </header>
+
+    <div class="shell">
+      <nav class="nav" aria-label="主导航">
+        <button type="button" class="nav-btn active" data-view="studio">工作台</button>
+        <button type="button" class="nav-btn" data-view="jobs">任务</button>
+        <button type="button" class="nav-btn" data-view="accounts">发布账号</button>
+        <button type="button" class="nav-btn" data-view="settings">设置</button>
+      </nav>
+
+      <main>
+        <section id="view-studio" class="view active">
+          <div class="studio-grid">
+            <form id="create-form" class="panel">
+              <div class="panel-head">
+                <h2>新的一条</h2>
+                <p>写下主题。文案可以留空，交给已配置的大模型；也可以自己贴口播。</p>
+              </div>
+              <label class="field">
+                <span>主题</span>
+                <input id="topic" name="topic" maxlength="80" placeholder="例如：下班后的十分钟，怎么把脑子放下来" />
+              </label>
+              <label class="field">
+                <span>口播文案（可选）</span>
+                <textarea id="script" name="script" rows="5" placeholder="留空则由大模型撰写。填写后会按原文配音，不再改写。"></textarea>
+              </label>
+              <div class="field">
+                <span>画幅</span>
+                <div class="aspects">
+                  <label class="aspect">
+                    <input type="radio" name="aspect" value="9:16" checked />
+                    <span class="aspect-card vertical"><b>竖屏</b><small>9:16 · 抖音 / 短视频</small></span>
+                  </label>
+                  <label class="aspect">
+                    <input type="radio" name="aspect" value="16:9" />
+                    <span class="aspect-card horizontal"><b>横屏</b><small>16:9 · B 站 / YouTube</small></span>
+                  </label>
+                </div>
+              </div>
+              <div class="split">
+                <label class="field">
+                  <span>配音</span>
+                  <select id="voice" name="voice">
+                    <option value="">跟随设置（晓晓）</option>
+                    <option value="zh-CN-XiaoxiaoNeural">晓晓 · 女声</option>
+                    <option value="zh-CN-XiaoyiNeural">晓伊 · 女声</option>
+                    <option value="zh-CN-YunxiNeural">云希 · 男声</option>
+                    <option value="zh-CN-YunjianNeural">云健 · 男声</option>
+                    <option value="zh-CN-YunyangNeural">云扬 · 新闻</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>画面来源</span>
+                  <select id="stock" name="stock_provider">
+                    <option value="">跟随设置</option>
+                    <option value="pexels">Pexels 素材</option>
+                    <option value="pixabay">Pixabay 素材</option>
+                    <option value="ai">AI 画面接口</option>
+                    <option value="placeholder">本地占位画面</option>
+                  </select>
+                </label>
+              </div>
+              <div class="checks">
+                <label><input id="burn" type="checkbox" checked /> 烧录字幕</label>
+                <label><input id="bgm" type="checkbox" checked /> 混入背景音乐（若 data/music 里有音频）</label>
+                <label><input id="publish" type="checkbox" /> 生成后发布</label>
+              </div>
+              <div id="publish-box" class="publish-box hidden">
+                <div class="platform-picks" id="platform-picks"></div>
+                <div class="split">
+                  <label class="field">
+                    <span>账号名</span>
+                    <input id="account" value="default" />
+                  </label>
+                  <label class="field">
+                    <span>定时发布（本地时间，可空）</span>
+                    <input id="publish-at" type="datetime-local" />
+                  </label>
+                </div>
+                <label class="inline"><input id="native-schedule" type="checkbox" /> 交给平台自己的定时（YouTube 会用 publishAt；其他平台只是尝试点击定时控件）</label>
+              </div>
+              <div class="actions">
+                <button type="submit" class="btn primary" id="submit-btn">生成成片</button>
+                <button type="button" class="btn ghost" id="demo-btn">离线演示一条</button>
+              </div>
+              <p class="hint" id="form-hint"></p>
+            </form>
+            <aside class="panel side-list">
+              <div class="panel-head">
+                <h2>最近任务</h2>
+                <button type="button" class="text-btn" id="refresh-jobs">刷新</button>
+              </div>
+              <div id="recent-jobs" class="job-list"></div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="view-jobs" class="view">
+          <div class="jobs-layout">
+            <div class="panel">
+              <div class="panel-head">
+                <h2>任务队列</h2>
+                <p>生成在后台排队，一次做一条。失败的原因会写在任务里。</p>
+              </div>
+              <div id="all-jobs" class="job-list"></div>
+            </div>
+            <article id="job-detail" class="panel detail">
+              <div class="empty-detail">
+                <h2>选一条任务</h2>
+                <p>这里会放成片预览、文案、字幕警告，以及补发到各平台的按钮。</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-accounts" class="view">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>发布账号</h2>
+              <p>抖音、快手、小红书、哔哩哔哩用浏览器扫码，登录态保存在本机。YouTube 走官方 OAuth。</p>
+            </div>
+            <label class="field short">
+              <span>账号名</span>
+              <input id="account-name" value="default" />
+            </label>
+            <div id="account-cards" class="cards"></div>
+          </div>
+        </section>
+
+        <section id="view-settings" class="view">
+          <form id="settings-form" class="panel settings-form">
+            <div class="panel-head">
+              <h2>密钥与接口</h2>
+              <p>密钥只写在本机 data/settings.json，接口不会回显原文。留空表示不修改。环境变量优先于这里的值。</p>
+            </div>
+            <h3>大模型（OpenAI 兼容）</h3>
+            <div class="split">
+              <label class="field"><span>Base URL</span><input id="llm-base" placeholder="https://api.deepseek.com/v1" /></label>
+              <label class="field"><span>模型</span><input id="llm-model" placeholder="deepseek-chat" /></label>
+            </div>
+            <label class="field"><span>API Key</span><input id="llm-key" type="password" autocomplete="off" placeholder="留空则不修改" /></label>
+            <h3>素材</h3>
+            <label class="field"><span>默认图库</span>
+              <select id="stock-default">
+                <option value="pexels">Pexels</option>
+                <option value="pixabay">Pixabay</option>
+                <option value="ai">AI 画面接口</option>
+                <option value="placeholder">占位画面</option>
+              </select>
+            </label>
+            <div class="split">
+              <label class="field"><span>Pexels API Key</span><input id="pexels-key" type="password" autocomplete="off" /></label>
+              <label class="field"><span>Pixabay API Key</span><input id="pixabay-key" type="password" autocomplete="off" /></label>
+            </div>
+            <div class="split">
+              <label class="field"><span>AI 画面 Base URL</span><input id="ai-base" placeholder="https://example.com" /></label>
+              <label class="field"><span>AI 画面 API Key</span><input id="ai-key" type="password" autocomplete="off" /></label>
+            </div>
+            <h3>YouTube Data API</h3>
+            <div class="split">
+              <label class="field"><span>客户端 ID</span><input id="yt-id" autocomplete="off" /></label>
+              <label class="field"><span>客户端密钥</span><input id="yt-secret" type="password" autocomplete="off" /></label>
+            </div>
+            <label class="field"><span>回调地址</span><input id="yt-redirect" /></label>
+            <h3>浏览器发布</h3>
+            <label class="field"><span>CDP 地址（附着本机 Chrome，可空）</span><input id="cdp-url" placeholder="http://127.0.0.1:9222" /></label>
+            <label class="inline"><input id="upload-headless" type="checkbox" /> 上传时使用无头浏览器（登录仍建议有头或 CDP）</label>
+            <div class="actions">
+              <button class="btn primary" type="submit">保存设置</button>
+              <span id="settings-note" class="hint"></span>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="qr-dialog">
+    <form method="dialog" class="qr-card">
+      <h3 id="qr-title">扫码登录</h3>
+      <p id="qr-text">用手机打开对应 App 扫描。页面会在登录成功后自动关闭。</p>
+      <img id="qr-image" alt="登录二维码" />
+      <div class="actions">
+        <button type="submit" class="btn ghost" value="cancel">关闭</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

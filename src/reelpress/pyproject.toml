@@ -1,0 +1,36 @@
+[project]
+name = "reelpress"
+version = "0.1.0"
+description = "映流：用大模型生成短视频，并发布到抖音、YouTube 等平台。"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "ReelPress contributors" }]
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+    "httpx>=0.27",
+    "pydantic>=2.6",
+    "edge-tts>=6.1",
+]
+
+[project.optional-dependencies]
+upload = ["playwright>=1.48"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+reelpress = "reelpress.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+reelpress = ["web/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

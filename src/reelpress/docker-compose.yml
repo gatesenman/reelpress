@@ -1,0 +1,21 @@
+services:
+  reelpress:
+    build: .
+    ports:
+      - "8765:8765"
+    volumes:
+      - ./data:/data
+      # 如果使用配置文件而不是环境变量，先 cp config.example.toml config.toml 再取消下一行注释。
+      # - ./config.toml:/app/config.toml:ro
+    environment:
+      REELPRESS_DATA_DIR: /data
+      REELPRESS_LLM_BASE_URL: ${REELPRESS_LLM_BASE_URL:-https://api.deepseek.com/v1}
+      REELPRESS_LLM_MODEL: ${REELPRESS_LLM_MODEL:-deepseek-chat}
+      REELPRESS_LLM_API_KEY: ${REELPRESS_LLM_API_KEY:-}
+      REELPRESS_PEXELS_API_KEY: ${REELPRESS_PEXELS_API_KEY:-}
+      REELPRESS_PIXABAY_API_KEY: ${REELPRESS_PIXABAY_API_KEY:-}
+      REELPRESS_VISUAL_AI_BASE_URL: ${REELPRESS_VISUAL_AI_BASE_URL:-}
+      REELPRESS_VISUAL_AI_API_KEY: ${REELPRESS_VISUAL_AI_API_KEY:-}
+      REELPRESS_YOUTUBE_CLIENT_ID: ${REELPRESS_YOUTUBE_CLIENT_ID:-}
+      REELPRESS_YOUTUBE_CLIENT_SECRET: ${REELPRESS_YOUTUBE_CLIENT_SECRET:-}
+    restart: unless-stopped

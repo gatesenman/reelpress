@@ -1,0 +1,10 @@
+.venv
+.git
+data
+tests
+.pytest_cache
+**/__pycache__
+*.egg-info
+config.toml
+*.mp4
+*.mp3
