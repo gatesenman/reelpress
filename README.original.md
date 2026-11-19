@@ -35,7 +35,6 @@ YouTube 不走浏览器。按官方 [YouTube Data API v3](https://developers.goo
     ├─ YouTubeUploader        OAuth + videos.insert
     └─ BrowserUploader        抖音 / 快手 / 小红书 / 哔哩哔哩
 ```
-
 新增平台时实现 `Uploader`（`check`、`login`、`upload`），并在 `src/reelpress/uploaders/registry.py` 注册。浏览器平台多数只需要补一份 `PlatformSpec`：登录地址、上传地址、登录 cookie 名和页面选择器。
 
 任务目录在 `data/jobs/<id>/`，里面有 `script.json`、`audio.mp3` 或 `audio.m4a`、`subtitle.srt`、`subtitle.ass` 和 `final.mp4`。
@@ -58,7 +57,6 @@ cp config.example.toml config.toml
 reelpress doctor
 reelpress serve
 ```
-
 浏览器打开 [http://127.0.0.1:8765](http://127.0.0.1:8765)。
 
 没有密钥时，可以先点网页上的「离线演示一条」，或者：
@@ -66,7 +64,6 @@ reelpress serve
 ```bash
 reelpress generate --mock --topic "清晨的街道"
 ```
-
 离线演示不调用大模型和语音服务，用静音时间轴和占位画面合成一条真的 mp4，用来确认 ffmpeg 和字幕正常。正式成片不要用这个模式。
 
 ## 配置
@@ -118,7 +115,6 @@ api_key = ""
 # base_url = "http://127.0.0.1:11434/v1"
 # model = "qwen2.5"
 ```
-
 密钥也可以只放在环境变量 `REELPRESS_LLM_API_KEY`，不写进文件。
 
 ### Pexels
@@ -144,7 +140,6 @@ base_url = "https://your-service.example"
 api_key = ""
 model = "your-model"
 ```
-
 映流会对每个检索词发送：
 
 ```http
@@ -154,17 +149,14 @@ Content-Type: application/json
 
 {"prompt": "rainy street", "aspect": "9:16", "duration": 4, "model": "your-model"}
 ```
-
 响应二选一：
 
 ```json
 {"url": "https://cdn.example/clip.mp4"}
 ```
-
 ```json
 {"b64": "<mp4 的 base64>"}
 ```
-
 返回的文件会进入和素材库相同的合成流程。接口失败时会退回占位画面，并在任务警告里写明原因。
 
 ### 配音
@@ -210,7 +202,6 @@ Content-Type: application/json
 ```text
 data/cookies/<平台>_<账号名>.json
 ```
-
 账号名默认 `default`。给同一个平台保存多个号时，用不同的账号名。
 
 网页：打开「发布账号」，填写账号名，点「扫码登录」。二维码出现后用对应 App 扫描。
@@ -224,7 +215,6 @@ reelpress login kuaishou --account shop
 reelpress login xiaohongshu --account shop
 reelpress login bilibili --account shop
 ```
-
 登录默认打开有头浏览器。服务器上没有显示器时，扫码经常被判为异常，这时改用本机 Chrome：
 
 ```bash
@@ -232,7 +222,6 @@ reelpress login bilibili --account shop
 google-chrome --remote-debugging-port=9222
 reelpress login douyin --account shop --cdp-url http://127.0.0.1:9222
 ```
-
 也可以把地址写进 `upload.cdp_url`。CDP 模式下映流不会关闭你已经打开的浏览器。
 
 各平台入口：
@@ -266,7 +255,6 @@ reelpress publish --job <任务ID> --platform douyin --platform youtube --accoun
 reelpress publish --job <任务ID> --platform douyin --at 2026-10-10T20:00
 reelpress publish --job <任务ID> --platform youtube --at 2026-10-10T20:00 --native-schedule
 ```
-
 `--stop-at` 可以是 `script`、`audio`、`subtitle`、`materials`、`video`。
 
 网页上勾选「生成后发布」会在成片完成后继续。填了本地时间就先进入「待发布」，到点由本机队列上传。服务进程得开着，定时才会触发。
@@ -280,7 +268,6 @@ cp .env.example .env
 # 编辑 .env，至少填 REELPRESS_LLM_API_KEY
 docker compose up --build
 ```
-
 容器监听 `8765`，数据在 `./data`（登录态、任务、设置都在这里）。镜像里包含 ffmpeg、文泉驿微米黑和 Playwright Chromium。
 
 YouTube 回调地址必须和浏览器实际访问的地址一致。如果不是本机的 `127.0.0.1:8765`，请同时改 Google 控制台和 `youtube.redirect_uri`。
@@ -293,7 +280,6 @@ YouTube 回调地址必须和浏览器实际访问的地址一致。如果不是
 pip install -e ".[dev]"
 pytest
 ```
-
 测试不访问外网。大模型、Pexels、YouTube 用 `httpx.MockTransport`。抖音上传用假的浏览器会话，检查标题是否填入、发布按钮是否点击。另有一条真的 ffmpeg 流水线：静音配音、占位画面、烧录字幕，断言成片里同时有视频轨和音频轨。
 
 ## 目录
@@ -313,7 +299,6 @@ src/reelpress/
   uploaders/        YouTube 与浏览器发布器
   web/              FastAPI 与中文界面
 ```
-
 ## 限制
 
 - 抖音、快手、小红书、哔哩哔哩的页面选择器会过期。上传失败时，错误会写明缺的是标题框还是发布按钮。
