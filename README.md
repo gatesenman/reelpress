@@ -4,7 +4,6 @@
 
 ## 功能特性
 
-- 从文案到短视频的生成流水线（详见 `README.original.md`）。
 - 可选上传能力（Playwright）。
 - 提供 `reelpress` 命令行入口与 Web 静态资源。
 
@@ -28,7 +27,11 @@ reelpress --help
 
 ## 文档
 
-- [源码 README](README.original.md)
+- [LICENSE](LICENSE)
+
+## 贡献
+
+欢迎通过 Issue 和 Pull Request 参与，详见 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。参与时请遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
 
 ## 许可证
 
@@ -44,7 +47,6 @@ reelpress --help
 
 ## Features
 
-- A pipeline from copy to short video (see `README.original.md`).
 - Optional upload support via Playwright.
 - Ships a `reelpress` CLI entry point and web static assets.
 
@@ -68,9 +70,12 @@ See that directory's README for commands and configuration.
 
 ## Documentation
 
-- [源码 README](README.original.md)
+- [LICENSE](LICENSE)
+
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Please report vulnerabilities privately via [SECURITY.md](SECURITY.md). This project follows [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ## License
 
 `pyproject.toml` declares MIT. See the `LICENSE` file at the repository root.
-

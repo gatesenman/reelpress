@@ -19,3 +19,16 @@ config.toml
 .vscode/
 playwright-report/
 test-results/
+
+# Additional hygiene
+Thumbs.db
+.env
+.env.local
+.env.*.local
+node_modules/
+target/
+logs/
+*.log
+coverage/
+!.env.example
+!.env.example.*
